@@ -18,6 +18,7 @@ import {
   Sparkles,
   ExternalLink,
   RefreshCw,
+  Activity,
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { AllSiteSettings } from "@/types/settings";
@@ -27,6 +28,7 @@ import { ContactTab } from "@/components/admin/settings/ContactTab";
 import { SocialTab } from "@/components/admin/settings/SocialTab";
 import { HomepageTab } from "@/components/admin/settings/HomepageTab";
 import { FooterTab } from "@/components/admin/settings/FooterTab";
+import { VisitorCounterTab } from "@/components/admin/settings/VisitorCounterTab";
 import { LocalizationTab } from "@/components/admin/settings/LocalizationTab";
 import { SeoTab } from "@/components/admin/settings/SeoTab";
 
@@ -37,6 +39,7 @@ type TabId =
   | "social"
   | "homepage"
   | "footer"
+  | "visitorCounter"
   | "localization"
   | "seo";
 
@@ -83,6 +86,12 @@ const TABS: TabItem[] = [
     label: "Footer",
     icon: LayoutTemplate,
     description: "Description, copyright & column visibility",
+  },
+  {
+    id: "visitorCounter",
+    label: "Visitor Counter",
+    icon: Activity,
+    description: "Public footer counter, starting count & live visits",
   },
   {
     id: "localization",
@@ -219,6 +228,15 @@ export default function AdminSettingsPage() {
     setFormData((prev) => ({
       ...prev,
       footer: { ...prev.footer, ...updates },
+    }));
+  };
+
+  const updateVisitorCounter = (
+    updates: Partial<AllSiteSettings["visitorCounter"]>
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      visitorCounter: { ...prev.visitorCounter, ...updates },
     }));
   };
 
@@ -420,6 +438,14 @@ export default function AdminSettingsPage() {
         )}
         {activeTab === "footer" && (
           <FooterTab data={formData.footer} onChange={updateFooter} />
+        )}
+        {activeTab === "visitorCounter" && (
+          <VisitorCounterTab
+            data={formData.visitorCounter}
+            onChange={updateVisitorCounter}
+            onSave={handleSave}
+            isSaving={isSaving}
+          />
         )}
         {activeTab === "localization" && (
           <LocalizationTab

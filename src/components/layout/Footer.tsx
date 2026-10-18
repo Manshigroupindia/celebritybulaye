@@ -8,6 +8,7 @@ import { FacebookIcon, InstagramIcon, YouTubeIcon, LinkedInIcon } from "@/compon
 import { Logo } from "@/components/common/Logo";
 import { useCategories } from "@/hooks/useCategories";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { VisitorCounter } from "@/components/layout/VisitorCounter";
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -262,18 +263,40 @@ export const Footer: React.FC = () => {
 
       {/* Bottom Legal bar */}
       <div className="border-t border-gray-800 bg-black/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>{copyright}</p>
-          <div className="flex items-center gap-4 sm:gap-6">
-            <Link href="/privacy-policy" className="hover:text-gray-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+          {/* Left: Copyright & Manshi Group of Services Credit */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+            <p>{copyright}</p>
+            <span className="hidden sm:inline text-gray-700">|</span>
+            <p className="text-gray-400">
+              Design &amp; Developed by{" "}
+              <a
+                href="https://manshigroup.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white font-medium underline underline-offset-2 decoration-gray-600 hover:decoration-white transition-colors"
+              >
+                Manshi Group of Services
+              </a>
+            </p>
+          </div>
+
+          {/* Center: Dynamic Visitor Counter */}
+          <div className="flex items-center justify-center">
+            <VisitorCounter />
+          </div>
+
+          {/* Right: Legal Links */}
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
+            <Link href="/privacy-policy" className="hover:text-gray-300 transition-colors">
               Privacy Policy
             </Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-gray-300">
-              Terms & Conditions
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">
+              Terms &amp; Conditions
             </Link>
             <span>•</span>
-            <Link href="/refund-policy" className="hover:text-gray-300">
+            <Link href="/refund-policy" className="hover:text-gray-300 transition-colors">
               Refund / Cancellation Policy
             </Link>
           </div>

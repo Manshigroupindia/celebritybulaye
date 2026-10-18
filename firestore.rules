@@ -72,5 +72,19 @@ service cloud.firestore {
     match /adminUsers/{userId} {
       allow read, write: if isAuthenticated();
     }
+
+    // 9. Site Visitor Statistics
+    // Public can read the visitor count to display in the website footer.
+    // Setting starting count and full configuration is strictly restricted to authenticated admin users.
+    // Concurrency-safe atomic increment (+1 only) is strictly permitted for server/session counting,
+    // preventing any arbitrary count tampering or malicious reset by visitors.
+    match /siteStats/{statId} {
+      allow read: if true;
+      allow create, delete: if isAuthenticated();
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count', 'updatedAt'])
+        && request.resource.data.count == resource.data.count + 1
+      );
+    }
   }
 }

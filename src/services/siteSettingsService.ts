@@ -16,7 +16,7 @@ function cleanFirestoreData<T>(obj: T): T {
 }
 
 /**
- * Save site settings document to Firestore.
+ * Save site settings document to Firestore and synchronize visitor stats.
  */
 export async function saveSiteSettingsToFirestore(settings: AllSiteSettings): Promise<void> {
   if (!db) {
@@ -31,10 +31,28 @@ export async function saveSiteSettingsToFirestore(settings: AllSiteSettings): Pr
     }),
     { merge: true }
   );
+
+  // Synchronize dedicated siteStats/visitors document
+  if (settings.visitorCounter) {
+    try {
+      const statsRef = doc(db, "siteStats", "visitors");
+      await setDoc(
+        statsRef,
+        {
+          count: settings.visitorCounter.currentCount,
+          enabled: settings.visitorCounter.enabled,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn("[Firestore] Failed to sync siteStats/visitors:", err);
+    }
+  }
 }
 
 /**
- * Fetch site settings from Firestore.
+ * Fetch site settings from Firestore (including latest real-time visitor stats).
  */
 export async function fetchSiteSettingsFromFirestore(): Promise<AllSiteSettings> {
   if (!db) return getSiteSettingsSync();
@@ -43,6 +61,25 @@ export async function fetchSiteSettingsFromFirestore(): Promise<AllSiteSettings>
     const snapshot = await getDoc(docRef);
     if (snapshot.exists()) {
       const data = snapshot.data() as Partial<AllSiteSettings>;
+
+      // Optionally fetch real-time visitor count from dedicated siteStats/visitors doc
+      try {
+        const statsRef = doc(db, "siteStats", "visitors");
+        const statsSnap = await getDoc(statsRef);
+        if (statsSnap.exists()) {
+          const statsData = statsSnap.data();
+          if (statsData) {
+            data.visitorCounter = {
+              enabled: statsData.enabled !== undefined ? !!statsData.enabled : (data.visitorCounter?.enabled ?? true),
+              startingCount: data.visitorCounter?.startingCount ?? statsData.count ?? 10000,
+              currentCount: typeof statsData.count === "number" ? statsData.count : (data.visitorCounter?.currentCount ?? 10000),
+            };
+          }
+        }
+      } catch (statsErr) {
+        // Non-blocking: fallback to siteSettings.visitorCounter
+      }
+
       const merged = mergeWithDefaults(data);
       persistSiteSettings(merged);
       return merged;
@@ -135,6 +172,10 @@ function mergeWithDefaults(saved: Partial<AllSiteSettings>): AllSiteSettings {
       ...(saved.localization || {}),
     },
     seo: { ...defaultSiteSettings.seo, ...(saved.seo || {}) },
+    visitorCounter: {
+      ...defaultSiteSettings.visitorCounter,
+      ...(saved.visitorCounter || {}),
+    },
     updatedAt: saved.updatedAt || defaultSiteSettings.updatedAt,
   };
 }
@@ -244,6 +285,9 @@ export async function updateSiteSettings(
       seo: updates.seo
         ? { ...current.seo, ...updates.seo }
         : current.seo,
+      visitorCounter: updates.visitorCounter
+        ? { ...current.visitorCounter, ...updates.visitorCounter }
+        : current.visitorCounter,
       updatedAt: new Date().toISOString(),
     };
 

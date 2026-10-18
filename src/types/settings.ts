@@ -107,6 +107,12 @@ export interface SeoSettings {
   favicon: string;
 }
 
+export interface VisitorCounterSettings {
+  enabled: boolean;
+  startingCount: number;
+  currentCount: number;
+}
+
 export interface AllSiteSettings {
   general: GeneralSettings;
   branding: BrandingSettings;
@@ -116,5 +122,6 @@ export interface AllSiteSettings {
   footer: FooterSettings;
   localization: LocalizationSettings;
   seo: SeoSettings;
+  visitorCounter: VisitorCounterSettings;
   updatedAt: string;
 }

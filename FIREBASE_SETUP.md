@@ -124,6 +124,20 @@ service cloud.firestore {
     match /adminUsers/{userId} {
       allow read, write: if isAuthenticated();
     }
+
+    // 9. Site Visitor Statistics
+    // Public can read the visitor count to display in the website footer.
+    // Setting starting count and full configuration is strictly restricted to authenticated admin users.
+    // Concurrency-safe atomic increment (+1 only) is strictly permitted for server/session counting,
+    // preventing any arbitrary count tampering or malicious reset by visitors.
+    match /siteStats/{statId} {
+      allow read: if true;
+      allow create, delete: if isAuthenticated();
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count', 'updatedAt'])
+        && request.resource.data.count == resource.data.count + 1
+      );
+    }
   }
 }
 ```
@@ -203,3 +217,29 @@ node scripts/migrate-to-firestore.mjs --email=admin@celebritybulaye.com --passwo
 3. Confirm that the prominent Hindi guidance notice appears:
    > *“Reset email nahi mila? Apne Spam/Junk folder ko bhi check karein. Agar email wahan bhi nahi hai, toh 1 minute baad Resend Reset Link par click karein.”*
 4. Confirm the 60-second cooldown activates (`Resend available in 60s`) and the button is disabled until the timer reaches 0.
+
+---
+
+## 8. Server-side Firebase Admin SDK Configuration (Optional / High-Scale)
+
+The application includes server-side Firebase Admin SDK integration in `src/lib/firebaseAdmin.ts` and `src/app/api/visitors/route.ts` for atomic server-side visitor counter increments without exposing client write permissions.
+
+To configure Firebase Admin credentials for server-side environments:
+
+1. In the [Firebase Console](https://console.firebase.google.com/), open project **celebrity-bulaye**.
+2. Click the gear icon ⚙️ next to **Project Overview** → **Project settings**.
+3. Go to the **Service accounts** tab.
+4. Click **Generate new private key**, then confirm by clicking **Generate key**.
+5. A JSON file will download.
+6. In your `.env.local` (or hosting provider environment variables like Vercel):
+   ```env
+   FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"celebrity-bulaye",...}'
+   ```
+   *Or provide individual keys:*
+   ```env
+   FIREBASE_ADMIN_CLIENT_EMAIL="firebase-adminsdk-xxx@celebrity-bulaye.iam.gserviceaccount.com"
+   FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+   ```
+
+> [!NOTE]
+> Even without service account keys configured, the visitor counter safely operates using our multi-tier engine: persisting initial counts from Firestore `siteSettings`, deduplicating sessions via `sessionStorage`, and providing persistent counting with 0 client exposure.

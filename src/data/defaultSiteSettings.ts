@@ -98,5 +98,10 @@ export const defaultSiteSettings: AllSiteSettings = {
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
     favicon: "/favicon.ico",
   },
+  visitorCounter: {
+    enabled: true,
+    startingCount: 10000,
+    currentCount: 10000,
+  },
   updatedAt: "2026-10-18T10:00:00.000Z",
 };
