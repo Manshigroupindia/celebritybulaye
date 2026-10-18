@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function for authentication
+    // Public user registration is disabled on the website.
+    // Accounts are provisioned exclusively by platform owners in Firebase Console Authentication.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Default deny-all security baseline
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Categories Collection
+    // Public can read categories for website browsing and filtering.
+    // Only authenticated admin users can create, update, or delete categories.
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 2. Subcategories Collection (when stored as top-level collection)
+    match /subcategories/{subcategoryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 3. Celebrities Collection
+    // Public can read celebrity profiles for website browsing and booking discovery.
+    // Only authenticated admin users have write permissions (create/update/delete).
+    match /celebrities/{celebrityId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 4. Private Celebrity Information (Hospitality riders, contract rates, private artist manager contacts)
+    // Strictly restricted to authenticated admin users; completely inaccessible to public visitors.
+    match /celebrityPrivate/{celebrityId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 5. Hero Banners Collection
+    // Public can read homepage promotional banners.
+    // Only authenticated admin users can create, update, reorder, or delete banners.
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 6. Site Settings Collection (Identity, branding, contact info, social links, footer, SEO)
+    // Public can read configuration; only authenticated admin users can modify settings.
+    match /siteSettings/{settingId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 7. Booking Inquiries & Contact Messages
+    // Public visitors can ONLY create inquiries with required fields.
+    // Public visitors can NEVER read, update, or delete existing inquiries.
+    // Only authenticated admin users can read, update, and manage customer inquiries.
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.fullName is string
+                    && request.resource.data.email is string
+                    && request.resource.data.phone is string;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    // 8. Admin Users Collection (optional profile metadata)
+    match /adminUsers/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
