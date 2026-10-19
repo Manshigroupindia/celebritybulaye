@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -11,9 +12,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Celebrity Bulaye — Book Bollywood Stars, Singers & Influencers",
+  metadataBase: new URL(getSiteUrl()),
+  title: "Celebrity-Bulaye | Book Celebrities for Your Events",
   description:
-    "India's premier verified celebrity booking platform. Connect directly with Bollywood actors, playback singers, stand-up comedians, top influencers, and sports icons for weddings, corporate events, and concerts.",
+    "Discover and book celebrities, actors, musicians, influencers and performers for events, shows and brand endorsements.",
   keywords: [
     "celebrity booking",
     "book bollywood stars",
@@ -22,6 +24,9 @@ export const metadata: Metadata = {
     "influencer booking india",
     "celebrity bulaye",
   ],
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

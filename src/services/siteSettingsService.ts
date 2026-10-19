@@ -81,7 +81,12 @@ export async function fetchSiteSettingsFromFirestore(): Promise<AllSiteSettings>
       }
 
       const merged = mergeWithDefaults(data);
-      persistSiteSettings(merged);
+      memoryCache = merged;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(SITE_SETTINGS_STORAGE_KEY, JSON.stringify(merged));
+        } catch {}
+      }
       return merged;
     }
     return getSiteSettingsSync();
