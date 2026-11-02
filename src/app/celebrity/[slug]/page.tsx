@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { CelebrityDetailView } from "@/components/celebrity/CelebrityDetailView";
 import { getCelebrityBySlugSync } from "@/services/celebrityService";
@@ -30,9 +30,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function CelebrityDetailPage({ params }: PageProps) {
+async function CelebrityDetailContent({ params }: PageProps) {
   const { slug } = await params;
   const celebrity = getCelebrityBySlugSync(slug);
-
   return <CelebrityDetailView slug={slug} initialCelebrity={celebrity} />;
+}
+
+function CelebrityDetailFallback() {
+  return (
+    <div className="bg-[#0B0F19] min-h-[60vh] flex items-center justify-center">
+      <div className="text-xs text-gray-400 animate-pulse">Loading celebrity profile...</div>
+    </div>
+  );
+}
+
+export default function CelebrityDetailPage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<CelebrityDetailFallback />}>
+      <CelebrityDetailContent params={params} />
+    </Suspense>
+  );
 }

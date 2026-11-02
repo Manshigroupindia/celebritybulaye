@@ -1,0 +1,93 @@
+{
+  "verifiedAt": "2026-11-02T06:46:24.829Z",
+  "totalVerified": 5,
+  "successfulDocuments": [
+    {
+      "documentId": "celeb-wp-1271",
+      "name": "Udit Narayan",
+      "slug": "udit-narayan",
+      "categoryId": "cat-music",
+      "categoryName": "Music",
+      "subcategoryId": "sub-singer",
+      "subcategoryName": "Singer",
+      "descriptionLength": 441,
+      "imageUrl": "https://celebritybulaye.in/wp-content/uploads/2023/08/udit-narayan.jpg",
+      "wordpressPostId": "1271",
+      "descriptionGenerated": false,
+      "descriptionSource": "wordpress_content",
+      "status": "active",
+      "source": "legacy_migration"
+    },
+    {
+      "documentId": "celeb-wp-1690",
+      "name": "Sidharth Malhotra",
+      "slug": "sidharth-malhotra",
+      "categoryId": "cat-actor",
+      "categoryName": "Actor",
+      "subcategoryId": "sub-bollywood-actor",
+      "subcategoryName": "Bollywood Actor",
+      "descriptionLength": 231,
+      "imageUrl": "https://celebritybulaye.in/wp-content/uploads/2023/08/sidharth-malhotra.jpg",
+      "wordpressPostId": "1690",
+      "descriptionGenerated": false,
+      "descriptionSource": "wordpress_content",
+      "status": "active",
+      "source": "legacy_migration"
+    },
+    {
+      "documentId": "celeb-wp-2015",
+      "name": "Kapil Sharma",
+      "slug": "kapil-sharma",
+      "categoryId": "cat-comedian",
+      "categoryName": "Comedian",
+      "subcategoryId": "sub-stand-up",
+      "subcategoryName": "Stand-up Comedian",
+      "descriptionLength": 385,
+      "imageUrl": "https://celebritybulaye.in/wp-content/uploads/2023/08/kapil-sharma.png",
+      "wordpressPostId": "2015",
+      "descriptionGenerated": false,
+      "descriptionSource": "wordpress_content",
+      "status": "active",
+      "source": "legacy_migration"
+    },
+    {
+      "documentId": "celeb-wp-2174",
+      "name": "Nora Fatehi",
+      "slug": "nora-fatehi",
+      "categoryId": "cat-actress",
+      "categoryName": "Actress",
+      "subcategoryId": "sub-bollywood-actress",
+      "subcategoryName": "Bollywood Actress",
+      "descriptionLength": 191,
+      "imageUrl": "https://celebritybulaye.in/wp-content/uploads/2023/08/Nora-Fatehi.png",
+      "wordpressPostId": "2174",
+      "descriptionGenerated": false,
+      "descriptionSource": "wordpress_content",
+      "status": "active",
+      "source": "legacy_migration"
+    },
+    {
+      "documentId": "celeb-wp-11442",
+      "name": "Kriti Sanon",
+      "slug": "kriti-sanon",
+      "categoryId": "cat-actress",
+      "categoryName": "Actress",
+      "subcategoryId": "sub-bollywood-actress",
+      "subcategoryName": "Bollywood Actress",
+      "descriptionLength": 178,
+      "imageUrl": "https://celebritybulaye.in/wp-content/uploads/2023/12/Kriti-Sanon.png",
+      "wordpressPostId": "11442",
+      "descriptionGenerated": true,
+      "descriptionSource": "ai_generated_migration",
+      "status": "active",
+      "source": "legacy_migration"
+    }
+  ],
+  "failedDocuments": [],
+  "manualRecordsAudit": {
+    "id": "celeb-neha-sharma",
+    "name": "Neha Sharma",
+    "status": "untouched_and_preserved"
+  },
+  "websiteIntegrity": {}
+}

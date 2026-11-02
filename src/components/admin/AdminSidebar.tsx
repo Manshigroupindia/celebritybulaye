@@ -61,6 +61,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ onCloseMobile }) => 
       icon: Settings,
       status: "active",
     },
+    {
+      name: "Legacy Migration",
+      href: "/admin/migrate",
+      icon: Database,
+      status: "active",
+    },
   ];
 
   return (

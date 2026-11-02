@@ -1,0 +1,134 @@
+[
+  {
+    "name": "Danny Denzongpa",
+    "slug": "danny-denzongpa",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #4732 into canonical record #3501 (danny-denzongpa). Retained richer description.",
+    "wordpressPostIds": [
+      "3501",
+      "4732"
+    ]
+  },
+  {
+    "name": "Sehban Azim",
+    "slug": "sehban-azim-2",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #7783 into canonical record #7783 (sehban-azim-2). Retained richer description.",
+    "wordpressPostIds": [
+      "7780",
+      "7783"
+    ]
+  },
+  {
+    "name": "Chetan Bhagat",
+    "slug": "chetan-bhagat-2",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #8647 into canonical record #8647 (chetan-bhagat-2). Retained richer description.",
+    "wordpressPostIds": [
+      "1880",
+      "8647"
+    ]
+  },
+  {
+    "name": "Ratna Pathak",
+    "slug": "ratna-pathak-2",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #13446 into canonical record #13446 (ratna-pathak-2). Retained richer description.",
+    "wordpressPostIds": [
+      "2081",
+      "13446"
+    ]
+  },
+  {
+    "name": "Sunny Leone",
+    "slug": "sunny-leone",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #13651 into canonical record #3966 (sunny-leone). Retained richer description.",
+    "wordpressPostIds": [
+      "3966",
+      "13651"
+    ]
+  },
+  {
+    "name": "Zoya Afroz",
+    "slug": "zoya-afroz",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #14013 into canonical record #3990 (zoya-afroz). Retained richer description.",
+    "wordpressPostIds": [
+      "3990",
+      "14013"
+    ]
+  },
+  {
+    "name": "Meka Srikanth",
+    "slug": "meka-srikanth",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #15838 into canonical record #15830 (meka-srikanth). Retained richer description.",
+    "wordpressPostIds": [
+      "15830",
+      "15838"
+    ]
+  },
+  {
+    "name": "Santosh Juvekar",
+    "slug": "santosh-juvekar",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #16158 into canonical record #16150 (santosh-juvekar). Retained richer description.",
+    "wordpressPostIds": [
+      "16150",
+      "16158"
+    ]
+  },
+  {
+    "name": "Aamir Ali",
+    "slug": "aamir-ali",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #16411 into canonical record #5034 (aamir-ali). Retained richer description.",
+    "wordpressPostIds": [
+      "5034",
+      "16411"
+    ]
+  },
+  {
+    "name": "Gurdas Maan",
+    "slug": "gurdas-maan-2",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #16938 into canonical record #16938 (gurdas-maan-2). Retained richer description.",
+    "wordpressPostIds": [
+      "16928",
+      "16938"
+    ]
+  },
+  {
+    "name": "Meghna Mishra",
+    "slug": "meghna-mishra",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #19142 into canonical record #18487 (meghna-mishra). Retained richer description.",
+    "wordpressPostIds": [
+      "18487",
+      "19142"
+    ]
+  },
+  {
+    "name": "Virendra Sehwag",
+    "slug": "virendra-sehwag",
+    "reason": "internal_json_duplicate",
+    "action": "merged",
+    "details": "Merged WP Post ID #20340 into canonical record #7997 (virendra-sehwag). Retained richer description.",
+    "wordpressPostIds": [
+      "7997",
+      "20340"
+    ]
+  }
+]

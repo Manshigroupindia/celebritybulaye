@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryListingView } from "@/components/category/CategoryListingView";
@@ -31,7 +31,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+async function CategoryPageContent({ params }: PageProps) {
   const { slug } = await params;
   return <CategoryListingView categorySlug={slug} />;
+}
+
+function CategoryLoadingFallback() {
+  return (
+    <div className="bg-[#FAF9F6] min-h-[60vh] flex items-center justify-center">
+      <div className="text-xs text-gray-400 animate-pulse">Loading category catalog...</div>
+    </div>
+  );
+}
+
+export default function CategoryPage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<CategoryLoadingFallback />}>
+      <CategoryPageContent params={params} />
+    </Suspense>
+  );
 }

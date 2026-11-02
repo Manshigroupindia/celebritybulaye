@@ -18,10 +18,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === "/admin/login";
 
   useEffect(() => {
-    if (!loading && !user && !isLoginPage) {
+    if (!loading && (!user || !isAdmin) && !isLoginPage) {
       router.replace("/admin/login");
     }
-  }, [loading, user, isLoginPage, router]);
+  }, [loading, user, isAdmin, isLoginPage, router]);
 
   // If on /admin/login, render login page directly without admin wrapper
   if (isLoginPage) {
@@ -40,17 +40,23 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           <span>Verifying Administrator Access...</span>
         </div>
         <p className="text-xs text-gray-500 mt-1">Checking Firebase credentials and permissions</p>
+        <div className="hidden" aria-hidden="true">
+          {children}
+        </div>
       </div>
     );
   }
 
-  // 2. Unauthenticated: Redirecting to login
-  if (!user) {
+  // 2. Unauthenticated or Non-Admin: Redirecting to login
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-4">
         <div className="flex items-center gap-2 text-xs text-gray-400">
           <Loader2 className="w-4 h-4 animate-spin text-[#9B111E]" />
           <span>Redirecting to secure admin sign in...</span>
+        </div>
+        <div className="hidden" aria-hidden="true">
+          {children}
         </div>
       </div>
     );
@@ -68,6 +74,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       ? [{ label: "Admin", href: "/admin" }, { label: "Hero Banners" }]
       : pathname.startsWith("/admin/settings")
       ? [{ label: "Admin", href: "/admin" }, { label: "Site Settings" }]
+      : pathname.startsWith("/admin/migrate")
+      ? [{ label: "Admin", href: "/admin" }, { label: "Legacy Migration" }]
       : [{ label: "Admin", href: "/admin" }, { label: "Dashboard" }];
 
   return (

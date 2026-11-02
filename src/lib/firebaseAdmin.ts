@@ -1,5 +1,6 @@
 import { getApps, initializeApp, cert, App } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
+import { getAuth as getAdminFirebaseAuth, Auth as AdminAuth } from "firebase-admin/auth";
 
 /**
  * Server-side Firebase Admin SDK singleton.
@@ -56,6 +57,12 @@ export function getAdminFirestore(): Firestore | null {
   const app = getAdminApp();
   if (!app) return null;
   return getFirestore(app);
+}
+
+export function getAdminAuth(): AdminAuth | null {
+  const app = getAdminApp();
+  if (!app) return null;
+  return getAdminFirebaseAuth(app);
 }
 
 export { FieldValue };

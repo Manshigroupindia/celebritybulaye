@@ -13,6 +13,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
+      {
+        protocol: "https",
+        hostname: "celebritybulaye.in",
+      },
+      {
+        protocol: "https",
+        hostname: "www.celebritybulaye.com",
+      },
+      {
+        protocol: "https",
+        hostname: "celebritybulaye.com",
+      },
     ],
   },
   turbopack: {
