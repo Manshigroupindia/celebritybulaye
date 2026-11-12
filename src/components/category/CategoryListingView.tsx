@@ -18,7 +18,7 @@ export const CategoryListingView: React.FC<CategoryListingViewProps> = ({
   subcategorySlug,
 }) => {
   const { categories, getCategoryBySlug, isMounted } = useCategories();
-  const { activeCelebrities } = useCelebrities();
+  const { activeCelebrities, isLoading, error, refresh } = useCelebrities();
   const category = getCategoryBySlug(categorySlug, { includeInactive: true });
 
   // If mounted and category does not exist or is inactive in public view
@@ -173,8 +173,14 @@ export const CategoryListingView: React.FC<CategoryListingViewProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         <div className="flex items-center justify-between mb-6">
           <span className="text-xs sm:text-sm font-semibold text-gray-800">
-            Showing <span className="text-[#9B111E] font-bold">{celebrities.length}</span> verified{" "}
-            {activeSubcategory ? activeSubcategory.name : currentCat.name}s
+            {isLoading ? (
+              <span className="text-gray-400">Loading verified talents...</span>
+            ) : (
+              <>
+                Showing <span className="text-[#9B111E] font-bold">{celebrities.length}</span> verified{" "}
+                {activeSubcategory ? activeSubcategory.name : currentCat.name}s
+              </>
+            )}
           </span>
           <Link
             href="/book-celebrity"
@@ -184,11 +190,41 @@ export const CategoryListingView: React.FC<CategoryListingViewProps> = ({
           </Link>
         </div>
 
-        <CelebrityGrid
-          celebrities={celebrities}
-          emptyTitle={`No ${activeSubcategory ? activeSubcategory.name : currentCat.name}s Available`}
-          emptyDescription={`We are currently onboarding additional verified ${currentCat.name}s. Send a custom inquiry and our talent manager will source them.`}
-        />
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-2xs animate-pulse"
+              >
+                <div className="aspect-4/5 bg-gray-200/80 w-full" />
+                <div className="p-4 space-y-2.5">
+                  <div className="h-4 bg-gray-200/80 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200/60 rounded w-1/2" />
+                  <div className="h-3 bg-gray-200/50 rounded w-1/3 pt-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-red-100 max-w-md mx-auto p-6 shadow-xs">
+            <AlertCircle className="w-8 h-8 text-[#9B111E] mx-auto mb-2" />
+            <p className="text-sm font-semibold text-gray-900 mb-1">Failed to Load Celebrities</p>
+            <p className="text-xs text-gray-500 mb-4">Could not retrieve records for this category.</p>
+            <button
+              onClick={() => refresh()}
+              className="px-4 py-2 bg-[#9B111E] text-white text-xs font-bold rounded-lg shadow-xs hover:bg-[#740D16] transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <CelebrityGrid
+            celebrities={celebrities}
+            emptyTitle={`No ${activeSubcategory ? activeSubcategory.name : currentCat.name}s Available`}
+            emptyDescription={`We are currently onboarding additional verified ${currentCat.name}s. Send a custom inquiry and our talent manager will source them.`}
+          />
+        )}
       </div>
     </div>
   );

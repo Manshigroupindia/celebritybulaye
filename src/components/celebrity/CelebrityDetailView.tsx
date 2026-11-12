@@ -32,55 +32,70 @@ export const CelebrityDetailView: React.FC<CelebrityDetailViewProps> = ({
   slug,
   initialCelebrity,
 }) => {
-  const { celebrities, isMounted } = useCelebrities();
+  const { celebrities, isLoading, isMounted } = useCelebrities();
 
-  // Pre-mount: use SSR initialCelebrity prop for deterministic initial render.
-  // Post-mount: use live reactive celebrities store to reflect any client updates.
-  const celebrity = isMounted
-    ? celebrities.find((c) => c.slug.toLowerCase() === slug.toLowerCase()) || null
-    : initialCelebrity || null;
+  // Prefer initial SSR celebrity prop; fallback to live reactive store
+  const celebrity =
+    initialCelebrity ||
+    celebrities.find((c) => c.slug.toLowerCase() === slug.toLowerCase()) ||
+    null;
 
   // Inactive or draft check: hide from public
   const isHidden =
     celebrity && (celebrity.status === "inactive" || celebrity.status === "draft");
 
-  if (isMounted) {
-    if (!celebrity || isHidden) {
-      return (
-        <div className="bg-[#FAF9F6] min-h-[70vh] flex items-center justify-center px-4 py-20">
-          <div className="max-w-md w-full bg-white rounded-3xl border border-gray-200 p-8 text-center shadow-sm">
-            <div className="w-14 h-14 rounded-full bg-red-50 text-[#9B111E] flex items-center justify-center mx-auto mb-4 border border-red-100">
-              <AlertCircle className="w-7 h-7" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-gray-900 font-serif mb-2">
-              Profile Unavailable
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-600 mb-6 leading-relaxed">
-              {isHidden
-                ? "This celebrity profile is currently inactive or saved as a private draft."
-                : "We could not find the requested celebrity profile in our directory."}
-            </p>
-            <Link
-              href="/book-celebrity"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#9B111E] hover:bg-[#740D16] text-white text-xs font-bold rounded-xl transition-colors shadow-xs"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Browse All Celebrities</span>
-            </Link>
+  // While loading and celebrity is not yet resolved, show a clean skeleton loader
+  if ((isLoading && !celebrity) || (!isMounted && !celebrity)) {
+    return (
+      <div className="bg-[#FAF9F6] min-h-screen pb-24 animate-pulse">
+        <div className="bg-white border-b border-gray-200/80 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-4 bg-gray-200 rounded w-48" />
           </div>
         </div>
-      );
-    }
-  } else {
-    // Initial SSR and initial client hydration pass:
-    // If not found in server seed data or is hidden, render deterministic loading fallback.
-    if (!celebrity || isHidden) {
-      return (
-        <div className="bg-[#FAF9F6] min-h-[50vh] flex items-center justify-center">
-          <div className="text-xs text-gray-400">Loading celebrity profile...</div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div className="lg:col-span-5">
+              <div className="aspect-4/5 bg-gray-200 rounded-2xl w-full" />
+            </div>
+            <div className="lg:col-span-7 space-y-6">
+              <div className="h-8 bg-gray-200 rounded w-2/3" />
+              <div className="h-4 bg-gray-200 rounded w-1/3" />
+              <div className="h-24 bg-gray-200 rounded w-full" />
+              <div className="h-40 bg-gray-200 rounded w-full" />
+            </div>
+          </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
+
+  // Not loading, and celebrity not found or hidden
+  if (!celebrity || isHidden) {
+    return (
+      <div className="bg-[#FAF9F6] min-h-[70vh] flex items-center justify-center px-4 py-20">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-gray-200 p-8 text-center shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-red-50 text-[#9B111E] flex items-center justify-center mx-auto mb-4 border border-red-100">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <h2 className="text-2xl font-extrabold text-gray-900 font-serif mb-2">
+            Profile Unavailable
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mb-6 leading-relaxed">
+            {isHidden
+              ? "This celebrity profile is currently inactive or saved as a private draft."
+              : "We could not find the requested celebrity profile in our directory."}
+          </p>
+          <Link
+            href="/book-celebrity"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#9B111E] hover:bg-[#740D16] text-white text-xs font-bold rounded-xl transition-colors shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Browse All Celebrities</span>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const breadcrumbs = [

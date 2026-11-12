@@ -11,7 +11,7 @@ import { Celebrity } from "@/types";
 
 export function BookCelebrityClient() {
   const searchParams = useSearchParams();
-  const { activeCelebrities } = useCelebrities();
+  const { activeCelebrities, isLoading, error, refresh } = useCelebrities();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "all");
@@ -229,25 +229,57 @@ export function BookCelebrityClient() {
 
           {/* Celebrity Results Grid */}
           <div className="lg:col-span-3">
-            <CelebrityGrid
-              celebrities={visibleCelebrities}
-              emptyTitle="No Celebrities Found"
-              emptyDescription="No artists matched your current filter criteria. Try choosing a different category or clearing filters."
-              onResetFilters={handleResetFilters}
-            />
-
-            {/* Load More Button */}
-            {hasMore && (
-              <div className="text-center mt-10">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5 sm:gap-6">
+                {Array.from({ length: 9 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-2xs animate-pulse"
+                  >
+                    <div className="aspect-4/5 bg-gray-200/80 w-full" />
+                    <div className="p-4 space-y-2.5">
+                      <div className="h-4 bg-gray-200/80 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200/60 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200/50 rounded w-1/3 pt-1" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-16 bg-white rounded-2xl border border-red-100 max-w-md mx-auto p-6 shadow-xs">
+                <p className="text-sm font-semibold text-gray-900 mb-1">Failed to Load Celebrities</p>
+                <p className="text-xs text-gray-500 mb-4">Could not retrieve records from the directory.</p>
                 <button
                   type="button"
-                  onClick={() => setVisibleCount((prev) => prev + 8)}
-                  className="px-8 py-3 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl text-xs sm:text-sm font-bold text-gray-800 shadow-xs hover:border-[#9B111E] hover:text-[#9B111E] transition-all inline-flex items-center gap-2"
+                  onClick={() => refresh()}
+                  className="px-4 py-2 bg-[#9B111E] text-white text-xs font-bold rounded-lg shadow-xs hover:bg-[#740D16] transition-colors"
                 >
-                  <Sparkles className="w-4 h-4 text-[#C5A059]" />
-                  <span>Load More Celebrities ({filteredCelebrities.length - visibleCount} remaining)</span>
+                  Retry
                 </button>
               </div>
+            ) : (
+              <>
+                <CelebrityGrid
+                  celebrities={visibleCelebrities}
+                  emptyTitle="No Celebrities Found"
+                  emptyDescription="No artists matched your current filter criteria. Try choosing a different category or clearing filters."
+                  onResetFilters={handleResetFilters}
+                />
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="text-center mt-10">
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 8)}
+                      className="px-8 py-3 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl text-xs sm:text-sm font-bold text-gray-800 shadow-xs hover:border-[#9B111E] hover:text-[#9B111E] transition-all inline-flex items-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#C5A059]" />
+                      <span>Load More Celebrities ({filteredCelebrities.length - visibleCount} remaining)</span>
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

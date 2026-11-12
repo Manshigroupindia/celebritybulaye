@@ -13,7 +13,7 @@ import {
   Unsubscribe,
 } from "firebase/firestore";
 
-export const CELEBRITIES_STORAGE_KEY = "cb_celebrities_store_v1";
+export const CELEBRITIES_STORAGE_KEY = "cb_celebrities_store_v2";
 export const CELEBRITIES_UPDATED_EVENT = "cb_celebrities_updated";
 
 function cleanFirestoreData<T>(obj: T): T {
@@ -51,9 +51,6 @@ export async function fetchCelebritiesFromFirestore(): Promise<Celebrity[]> {
       : query(collection(db, "celebrities"), where("status", "==", "active"));
 
     const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-      return getStoredCelebrities();
-    }
     const list: Celebrity[] = [];
     snapshot.forEach((d) => {
       list.push(d.data() as Celebrity);
@@ -160,9 +157,9 @@ function normalizeSeedCelebrities(): Celebrity[] {
 export const defaultNormalizedCelebrities: Celebrity[] = normalizeSeedCelebrities();
 
 /**
- * Global in-memory cache for SSR / Node environment.
+ * Global in-memory cache for SSR / Node environment. Initialized empty so no fake data flashes.
  */
-let memoryCache: Celebrity[] = [...defaultNormalizedCelebrities];
+let memoryCache: Celebrity[] = [];
 
 /**
  * Generate a clean URL-friendly unique slug from string.
@@ -189,7 +186,7 @@ export function generateCelebritySlug(name: string, excludeId?: string): string 
 
 /**
  * Read celebrities from persistence.
- * Client: reads localStorage (seeds if empty).
+ * Client: reads localStorage (never seeds fake celebrities).
  * Server: returns in-memory cache.
  */
 export function getStoredCelebrities(): Celebrity[] {
@@ -198,20 +195,25 @@ export function getStoredCelebrities(): Celebrity[] {
   }
 
   try {
+    // Clean up deprecated v1 storage that may have held mock celebrities
+    if (localStorage.getItem("cb_celebrities_store_v1")) {
+      localStorage.removeItem("cb_celebrities_store_v1");
+    }
+
     const raw = localStorage.getItem(CELEBRITIES_STORAGE_KEY);
     if (!raw) {
-      // Seed initial normalized celebrities once
-      localStorage.setItem(CELEBRITIES_STORAGE_KEY, JSON.stringify(defaultNormalizedCelebrities));
-      memoryCache = [...defaultNormalizedCelebrities];
-      return defaultNormalizedCelebrities;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      memoryCache = parsed;
-      return parsed;
+    if (Array.isArray(parsed)) {
+      // Filter out any obsolete mock seed IDs (c1, c2, etc.)
+      const clean = parsed.filter(
+        (c) => c && typeof c.id === "string" && !/^c\d+$/.test(c.id)
+      );
+      memoryCache = clean;
+      return clean;
     }
-    memoryCache = [...defaultNormalizedCelebrities];
-    return defaultNormalizedCelebrities;
+    return [];
   } catch (err) {
     console.error("Failed to read celebrities from localStorage:", err);
     return memoryCache;
@@ -375,8 +377,38 @@ export async function getCelebrityBySlug(
   slug: string,
   options?: { includeInactive?: boolean }
 ): Promise<Celebrity | null> {
-  await new Promise((resolve) => setTimeout(resolve, 30));
-  return getCelebrityBySlugSync(slug, options);
+  const local = getCelebrityBySlugSync(slug, options);
+  if (local) return local;
+  return getCelebrityBySlugFromFirestore(slug, options);
+}
+
+/**
+ * Fetch celebrity by slug directly from Firestore.
+ */
+export async function getCelebrityBySlugFromFirestore(
+  slug: string,
+  options?: { includeInactive?: boolean }
+): Promise<Celebrity | null> {
+  if (!db) return null;
+  try {
+    const normalizedSlug = slug.toLowerCase().trim();
+    const q = query(
+      collection(db, "celebrities"),
+      where("slug", "==", normalizedSlug)
+    );
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const data = snapshot.docs[0].data() as Celebrity;
+      if (!options?.includeInactive && (data.status ?? "active") !== "active") {
+        return null;
+      }
+      return data;
+    }
+    return null;
+  } catch (err) {
+    console.warn("[Firestore] Failed to fetch celebrity by slug:", err);
+    return null;
+  }
 }
 
 /**

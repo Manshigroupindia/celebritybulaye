@@ -1,8 +1,11 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
+import { connection } from "next/server";
 import { CelebrityDetailView } from "@/components/celebrity/CelebrityDetailView";
-import { getCelebrityBySlugSync } from "@/services/celebrityService";
-import { celebrities } from "@/data/celebrities";
+import {
+  getCelebrityBySlugSync,
+  getCelebrityBySlugFromFirestore,
+} from "@/services/celebrityService";
 
 interface PageProps {
   params: Promise<{
@@ -10,15 +13,13 @@ interface PageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return celebrities.map((celeb) => ({
-    slug: celeb.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  await connection();
   const { slug } = await params;
-  const celeb = getCelebrityBySlugSync(slug);
+  let celeb = getCelebrityBySlugSync(slug);
+  if (!celeb) {
+    celeb = await getCelebrityBySlugFromFirestore(slug);
+  }
 
   if (!celeb) {
     return { title: "Celebrity Profile — Celebrity Bulaye" };
@@ -26,13 +27,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `Book ${celeb.name} (${celeb.category}) — Celebrity Booking & Management | Celebrity Bulaye`,
-    description: celeb.shortDescription,
+    description: celeb.shortDescription || celeb.description,
   };
 }
 
 async function CelebrityDetailContent({ params }: PageProps) {
+  await connection();
   const { slug } = await params;
-  const celebrity = getCelebrityBySlugSync(slug);
+  let celebrity = getCelebrityBySlugSync(slug);
+  if (!celebrity) {
+    celebrity = await getCelebrityBySlugFromFirestore(slug);
+  }
   return <CelebrityDetailView slug={slug} initialCelebrity={celebrity} />;
 }
 

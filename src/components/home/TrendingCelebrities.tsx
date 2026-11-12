@@ -9,10 +9,12 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 
 export const TrendingCelebrities: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { activeCelebrities } = useCelebrities();
+  const { activeCelebrities, isLoading, error } = useCelebrities();
 
   const trending = useMemo(() => {
-    return activeCelebrities.filter((c) => c.trending);
+    const list = activeCelebrities.filter((c) => c.trending);
+    if (list.length > 0) return list;
+    return activeCelebrities.slice(0, 6);
   }, [activeCelebrities]);
 
   const handleScroll = (direction: "left" | "right") => {
@@ -24,6 +26,10 @@ export const TrendingCelebrities: React.FC = () => {
       });
     }
   };
+
+  if (!isLoading && (error || trending.length === 0)) {
+    return null;
+  }
 
   return (
     <section className="py-14 sm:py-20 bg-[#FAF9F6] border-t border-gray-100">
@@ -62,7 +68,21 @@ export const TrendingCelebrities: React.FC = () => {
           ref={scrollRef}
           className="flex items-stretch gap-5 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory"
         >
-          {trending.map((celeb) => (
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="w-[260px] sm:w-[280px] shrink-0 snap-start bg-white rounded-xl overflow-hidden border border-gray-200 shadow-2xs animate-pulse"
+              >
+                <div className="aspect-4/5 bg-gray-200/80 w-full" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-gray-200/80 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200/60 rounded w-1/2" />
+                </div>
+              </div>
+            ))
+          ) : (
+            trending.map((celeb) => (
             <div
               key={celeb.id}
               className="w-[260px] sm:w-[280px] shrink-0 snap-start bg-white rounded-xl overflow-hidden border border-gray-200 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group"
@@ -116,8 +136,9 @@ export const TrendingCelebrities: React.FC = () => {
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
+      </div>
       </div>
     </section>
   );

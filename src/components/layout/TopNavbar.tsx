@@ -70,7 +70,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Google Translate Selector (controlled by settings) */}
             {settings.localization.enableLanguageSelector && (
-              <div className="hidden sm:block">
+              <div className="flex items-center">
                 <GoogleTranslate />
               </div>
             )}
