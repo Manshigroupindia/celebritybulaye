@@ -11,8 +11,8 @@ interface RouteContext {
   }>;
 }
 
-const FORMSPREE_CONTACT_URL = "https://formspree.io/f/mljeyaoe";
-const FORMSPREE_BOOKING_URL = "https://formspree.io/f/mwlokrov";
+// Universal Formspree endpoint for all inquiries
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwlokrov";
 
 /**
  * POST /api/admin/inquiries/[id]/retry-formspree
@@ -54,47 +54,61 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     }
 
     // 2. Prepare Formspree payload
-    const targetUrl =
-      inquiryData.inquiryType === "contact"
-        ? FORMSPREE_CONTACT_URL
-        : FORMSPREE_BOOKING_URL;
+    const isBooking = inquiryData.inquiryType === "celebrity_booking";
+    const endpointLabel = isBooking
+      ? "Celebrity Booking Request"
+      : "General Contact & Enquiry";
 
     const payload: Record<string, string> = {
-      _subject:
-        inquiryData.inquiryType === "celebrity_booking"
-          ? `[Booking Inquiry - Retried] ${inquiryData.celebrityName || "Celebrity"} - ${inquiryData.customerName}`
-          : `[Contact Inquiry - Retried] ${inquiryData.subject || "General"} - ${inquiryData.customerName}`,
-      "Inquiry Type":
-        inquiryData.inquiryType === "contact" ? "General Contact & Enquiry" : "Celebrity Booking Request",
+      _subject: isBooking
+        ? `[Booking Inquiry - Retried] ${inquiryData.celebrityName || "Celebrity"} - ${inquiryData.customerName}`
+        : `[Contact Inquiry - Retried] ${inquiryData.subject || "General"} - ${inquiryData.customerName}`,
+      name: inquiryData.customerName,
+      email: inquiryData.email,
+      _replyto: inquiryData.email,
+      phone: inquiryData.phone,
+      message: inquiryData.message,
+      inquiryType: endpointLabel,
       "Customer Name": inquiryData.customerName,
-      Email: inquiryData.email,
-      Phone: inquiryData.phone,
-      Message: inquiryData.message,
+      "Email Address": inquiryData.email,
+      "Phone Number": inquiryData.phone,
+      "Inquiry Type": endpointLabel,
       "Source Page": inquiryData.sourcePage || "/",
       "Inquiry Reference ID": inquiryData.id,
       "Retry Date (IST)": new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     };
 
-    if (inquiryData.inquiryType === "celebrity_booking") {
+    if (isBooking) {
+      payload["celebrityName"] = inquiryData.celebrityName || "N/A";
       payload["Celebrity Name"] = inquiryData.celebrityName || "N/A";
-      if (inquiryData.celebrityId) payload["Celebrity ID"] = inquiryData.celebrityId;
+      if (inquiryData.celebrityId) {
+        payload["celebrityId"] = inquiryData.celebrityId;
+        payload["Celebrity ID"] = inquiryData.celebrityId;
+      }
+      payload["eventType"] = inquiryData.eventType || "N/A";
       payload["Event Type"] = inquiryData.eventType || "N/A";
+      payload["eventDate"] = inquiryData.eventDate || "N/A";
       payload["Event Date"] = inquiryData.eventDate || "N/A";
+      payload["eventLocation"] = inquiryData.eventLocation || "N/A";
       payload["Event Location / Venue"] = inquiryData.eventLocation || "N/A";
       if (inquiryData.budget || inquiryData.budgetRange) {
-        payload["Budget"] = inquiryData.budget || inquiryData.budgetRange || "N/A";
+        const budgetVal = inquiryData.budget || inquiryData.budgetRange || "N/A";
+        payload["budget"] = budgetVal;
+        payload["Budget"] = budgetVal;
       }
       if (inquiryData.audienceCount) {
+        payload["audienceCount"] = inquiryData.audienceCount;
         payload["Expected Audience"] = inquiryData.audienceCount;
       }
     } else {
       if (inquiryData.subject) {
+        payload["subject"] = inquiryData.subject;
         payload["Subject"] = inquiryData.subject;
       }
     }
 
     // 3. Dispatch to Formspree
-    const formspreeRes = await fetch(targetUrl, {
+    const formspreeRes = await fetch(FORMSPREE_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,9 +143,22 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
     let errorDetail = `HTTP ${formspreeRes.status}: ${formspreeRes.statusText}`;
     try {
-      const errJson = await formspreeRes.json();
-      if (errJson && errJson.errors && Array.isArray(errJson.errors)) {
-        errorDetail = errJson.errors.map((e: { message?: string }) => e.message || "").join("; ") || errorDetail;
+      const text = await formspreeRes.text();
+      if (text) {
+        try {
+          const errJson = JSON.parse(text);
+          if (errJson && errJson.errors && Array.isArray(errJson.errors)) {
+            errorDetail =
+              errJson.errors
+                .map((e: { message?: string }) => e.message || "")
+                .filter(Boolean)
+                .join("; ") || errorDetail;
+          } else if (errJson && errJson.error) {
+            errorDetail = typeof errJson.error === "string" ? errJson.error : errorDetail;
+          }
+        } catch {
+          errorDetail = `${errorDetail} - ${text.slice(0, 150)}`;
+        }
       }
     } catch {}
 

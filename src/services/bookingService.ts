@@ -315,10 +315,23 @@ export async function submitBookingInquiry(
     body: JSON.stringify(payload),
   });
 
-  const result = await response.json();
+  let result: any = null;
+  const rawText = await response.text();
+  if (rawText) {
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      result = null;
+    }
+  }
 
-  if (!response.ok || !result.success) {
-    throw new Error(result.error || "Failed to submit booking inquiry. Please try again.");
+  if (!response.ok || !result || !result.success) {
+    const errorMsg =
+      result?.error ||
+      (response.status >= 500
+        ? "Server encountered an error processing your inquiry. Please try again shortly."
+        : `Submission failed (HTTP ${response.status}). Please try again.`);
+    throw new Error(errorMsg);
   }
 
   return {
@@ -332,7 +345,7 @@ export async function submitBookingInquiry(
 
 /**
  * Submit contact message through the secure server-side API.
- * Performs validation, saves to Firestore, and forwards to Formspree endpoint (mljeyaoe).
+ * Performs validation, saves to Firestore, and forwards to Formspree endpoint (mwlokrov).
  */
 export async function submitContactMessage(data: {
   name: string;
@@ -364,10 +377,23 @@ export async function submitContactMessage(data: {
     body: JSON.stringify(payload),
   });
 
-  const result = await response.json();
+  let result: any = null;
+  const rawText = await response.text();
+  if (rawText) {
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      result = null;
+    }
+  }
 
-  if (!response.ok || !result.success) {
-    throw new Error(result.error || "Failed to send contact message. Please try again.");
+  if (!response.ok || !result || !result.success) {
+    const errorMsg =
+      result?.error ||
+      (response.status >= 500
+        ? "Server encountered an error processing your inquiry. Please try again shortly."
+        : `Failed to send contact message (HTTP ${response.status}). Please try again.`);
+    throw new Error(errorMsg);
   }
 
   return {

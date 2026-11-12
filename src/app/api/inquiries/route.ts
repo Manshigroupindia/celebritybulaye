@@ -4,9 +4,8 @@ import { db } from "@/lib/firebase";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { Inquiry, InquiryType, FormspreeStatus } from "@/types/inquiry";
 
-// Endpoints specified for Formspree integration
-const FORMSPREE_CONTACT_URL = "https://formspree.io/f/mljeyaoe";
-const FORMSPREE_BOOKING_URL = "https://formspree.io/f/mwlokrov";
+// Single universal Formspree endpoint for EVERY form across the entire website
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwlokrov";
 
 // In-memory IP rate limiter: max 6 requests per 60 seconds per IP
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -44,58 +43,69 @@ function sanitizeText(str: unknown, maxLen = 1000): string {
 }
 
 /**
- * Forward inquiry payload to the appropriate Formspree endpoint.
+ * Forward inquiry payload to the single universal Formspree endpoint (mwlokrov).
  */
 async function forwardToFormspree(inquiry: Inquiry): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const targetUrl =
-    inquiry.inquiryType === "contact"
-      ? FORMSPREE_CONTACT_URL
-      : FORMSPREE_BOOKING_URL;
+  const isBooking = inquiry.inquiryType === "celebrity_booking";
+  const endpointLabel = isBooking
+    ? "Celebrity Booking Request"
+    : "General Contact & Enquiry";
 
-  const endpointLabel =
-    inquiry.inquiryType === "contact"
-      ? "General Contact & Enquiry"
-      : "Celebrity Booking Request";
-
-  // Build clean, human-readable Formspree form submission data
+  // Build clean, Formspree-compatible form submission data.
+  // Standard Formspree fields: name, email, _replyto, phone, message, _subject
   const payload: Record<string, string> = {
-    _subject:
-      inquiry.inquiryType === "celebrity_booking"
-        ? `[Booking Inquiry] ${inquiry.celebrityName || "Celebrity"} - ${inquiry.customerName}`
-        : `[Contact Inquiry] ${inquiry.subject || "General"} - ${inquiry.customerName}`,
-    "Inquiry Type": endpointLabel,
+    _subject: isBooking
+      ? `[Booking Inquiry] ${inquiry.celebrityName || "Celebrity"} - ${inquiry.customerName}`
+      : `[Contact Inquiry] ${inquiry.subject || "General"} - ${inquiry.customerName}`,
+    name: inquiry.customerName,
+    email: inquiry.email,
+    _replyto: inquiry.email,
+    phone: inquiry.phone,
+    message: inquiry.message,
+    inquiryType: endpointLabel,
     "Customer Name": inquiry.customerName,
-    Email: inquiry.email,
-    Phone: inquiry.phone,
-    Message: inquiry.message,
+    "Email Address": inquiry.email,
+    "Phone Number": inquiry.phone,
+    "Inquiry Type": endpointLabel,
     "Source Page": inquiry.sourcePage || "/",
     "Inquiry Reference ID": inquiry.id,
     "Submission Date (IST)": new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
   };
 
-  if (inquiry.inquiryType === "celebrity_booking") {
+  if (isBooking) {
+    payload["celebrityName"] = inquiry.celebrityName || "N/A";
     payload["Celebrity Name"] = inquiry.celebrityName || "N/A";
-    if (inquiry.celebrityId) payload["Celebrity ID"] = inquiry.celebrityId;
+    if (inquiry.celebrityId) {
+      payload["celebrityId"] = inquiry.celebrityId;
+      payload["Celebrity ID"] = inquiry.celebrityId;
+    }
+    payload["eventType"] = inquiry.eventType || "N/A";
     payload["Event Type"] = inquiry.eventType || "N/A";
+    payload["eventDate"] = inquiry.eventDate || "N/A";
     payload["Event Date"] = inquiry.eventDate || "N/A";
+    payload["eventLocation"] = inquiry.eventLocation || "N/A";
     payload["Event Location / Venue"] = inquiry.eventLocation || "N/A";
     if (inquiry.budget || inquiry.budgetRange) {
-      payload["Budget"] = inquiry.budget || inquiry.budgetRange || "N/A";
+      const budgetVal = inquiry.budget || inquiry.budgetRange || "N/A";
+      payload["budget"] = budgetVal;
+      payload["Budget"] = budgetVal;
     }
     if (inquiry.audienceCount) {
+      payload["audienceCount"] = inquiry.audienceCount;
       payload["Expected Audience"] = inquiry.audienceCount;
     }
   } else {
     if (inquiry.subject) {
+      payload["subject"] = inquiry.subject;
       payload["Subject"] = inquiry.subject;
     }
   }
 
   try {
-    const res = await fetch(targetUrl, {
+    const res = await fetch(FORMSPREE_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -110,9 +120,22 @@ async function forwardToFormspree(inquiry: Inquiry): Promise<{
 
     let errorDetail = `HTTP ${res.status}: ${res.statusText}`;
     try {
-      const json = await res.json();
-      if (json && json.errors && Array.isArray(json.errors)) {
-        errorDetail = json.errors.map((e: { message?: string }) => e.message || "").join("; ") || errorDetail;
+      const text = await res.text();
+      if (text) {
+        try {
+          const json = JSON.parse(text);
+          if (json && Array.isArray(json.errors) && json.errors.length > 0) {
+            errorDetail =
+              json.errors
+                .map((e: { message?: string }) => e.message || "")
+                .filter(Boolean)
+                .join("; ") || errorDetail;
+          } else if (json && json.error) {
+            errorDetail = typeof json.error === "string" ? json.error : errorDetail;
+          }
+        } catch {
+          errorDetail = `${errorDetail} - ${text.slice(0, 150)}`;
+        }
       }
     } catch {}
 

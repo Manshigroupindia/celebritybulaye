@@ -1007,9 +1007,7 @@ export function AdminInquiriesView() {
                       Endpoint
                     </span>
                     <span className="font-mono text-gray-700 text-[11px]">
-                      {selectedInquiry.inquiryType === "contact"
-                        ? "formspree.io/f/mljeyaoe (Contact)"
-                        : "formspree.io/f/mwlokrov (Booking)"}
+                      formspree.io/f/mwlokrov (Universal Endpoint)
                     </span>
                   </div>
 
