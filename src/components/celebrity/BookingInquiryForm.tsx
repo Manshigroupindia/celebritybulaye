@@ -28,6 +28,7 @@ export const BookingInquiryForm: React.FC<BookingInquiryFormProps> = ({
     budgetRange: "₹5L - ₹15L",
     message: "",
     agreedToTerms: true,
+    _gotcha: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,6 +129,7 @@ export const BookingInquiryForm: React.FC<BookingInquiryFormProps> = ({
       budgetRange: "₹5L - ₹15L",
       message: "",
       agreedToTerms: true,
+      _gotcha: "",
     });
     setErrors({});
   };
@@ -195,6 +197,18 @@ export const BookingInquiryForm: React.FC<BookingInquiryFormProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Honeypot field for spam prevention */}
+            <input
+              type="text"
+              name="_gotcha"
+              value={formData._gotcha || ""}
+              onChange={handleChange}
+              tabIndex={-1}
+              autoComplete="off"
+              className="hidden"
+              aria-hidden="true"
+            />
+
             {errors.form && (
               <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />

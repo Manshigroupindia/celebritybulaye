@@ -51,6 +51,8 @@ export default function ContactPage() {
     subject: "General Booking Inquiry",
     message: "",
   });
+  const [gotcha, setGotcha] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,8 +79,24 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
     try {
-      await submitContactMessage(formData);
+      const res = await submitContactMessage({
+        ...formData,
+        sourcePage: "/contact",
+        _gotcha: gotcha,
+      });
+      setSuccessMessage(
+        res.message ||
+          "Thank you for contacting Celebrity Bulaye! Your inquiry has been submitted successfully. Our team will get in touch with you soon."
+      );
       setIsSuccess(true);
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        subject: "General Booking Inquiry",
+        message: "",
+      });
+      setGotcha("");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to send message.";
       setErrors({ form: msg });
@@ -272,7 +290,8 @@ export default function ContactPage() {
                   Message Sent Successfully!
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-600 max-w-sm mx-auto mb-6">
-                  Thank you for reaching out to Celebrity Bulaye. Our coordinator will review your request and get back to you shortly.
+                  {successMessage ||
+                    "Thank you for contacting Celebrity Bulaye! Your inquiry has been submitted successfully. Our team will get in touch with you soon."}
                 </p>
                 <button
                   type="button"
@@ -285,6 +304,7 @@ export default function ContactPage() {
                       subject: "General Booking Inquiry",
                       message: "",
                     });
+                    setGotcha("");
                   }}
                   className="px-5 py-2.5 bg-[#9B111E] text-white rounded-lg text-xs font-bold hover:bg-[#740D16] transition-colors"
                 >
@@ -293,6 +313,18 @@ export default function ContactPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Honeypot field for spam prevention */}
+                <input
+                  type="text"
+                  name="_gotcha"
+                  value={gotcha}
+                  onChange={(e) => setGotcha(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden"
+                  aria-hidden="true"
+                />
+
                 {errors.form && (
                   <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />

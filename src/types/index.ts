@@ -114,6 +114,7 @@ export interface BookingInquiryFormData {
   budgetRange?: string;
   message: string;
   agreedToTerms: boolean;
+  _gotcha?: string;
 }
 
 export interface ArtistApplicationFormData {
@@ -132,3 +133,5 @@ export interface ArtistApplicationFormData {
   profileImage?: string;
   agreedToTerms: boolean;
 }
+
+export * from "./inquiry";

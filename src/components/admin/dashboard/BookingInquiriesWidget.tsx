@@ -16,8 +16,8 @@ import {
   getStoredInquiriesSync,
   fetchInquiriesFromFirestore,
   subscribeInquiriesFromFirestore,
-  StoredBookingInquiry,
 } from "@/services/bookingService";
+import { Inquiry } from "@/types/inquiry";
 
 interface BookingInquiriesWidgetProps {
   isMounted: boolean;
@@ -26,7 +26,7 @@ interface BookingInquiriesWidgetProps {
 export const BookingInquiriesWidget: React.FC<BookingInquiriesWidgetProps> = ({
   isMounted,
 }) => {
-  const [inquiries, setInquiries] = useState<StoredBookingInquiry[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
   useEffect(() => {
     if (isMounted) {
@@ -49,8 +49,8 @@ export const BookingInquiriesWidget: React.FC<BookingInquiriesWidgetProps> = ({
   const newInquiries = inquiries.filter(
     (i) => !i.status || i.status === "new"
   ).length;
-  const pendingInquiries = inquiries.filter(
-    (i) => i.status === "pending"
+  const inProgressInquiries = inquiries.filter(
+    (i) => i.status === "in_progress" || (i.status as string) === "pending"
   ).length;
 
   const recentInquiries = [...inquiries].reverse().slice(0, 3);
@@ -71,10 +71,13 @@ export const BookingInquiriesWidget: React.FC<BookingInquiriesWidgetProps> = ({
           </h2>
         </div>
 
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/70 text-[10px] font-bold text-emerald-800">
-          <ShieldCheck className="w-3 h-3 text-emerald-600" />
-          <span>Firestore Ready</span>
-        </span>
+        <Link
+          href="/admin/inquiries"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-xs font-bold text-[#9B111E] hover:bg-red-100 transition-colors"
+        >
+          <span>Manage Inquiries</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
       {/* Inquiry Content */}
@@ -122,11 +125,11 @@ export const BookingInquiriesWidget: React.FC<BookingInquiriesWidgetProps> = ({
                 </span>
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
-                  Pending
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">
+                  In Progress
                 </span>
-                <span className="text-lg font-bold text-amber-800 font-serif">
-                  {pendingInquiries}
+                <span className="text-lg font-bold text-blue-800 font-serif">
+                  {inProgressInquiries}
                 </span>
               </div>
             </div>
@@ -143,22 +146,22 @@ export const BookingInquiriesWidget: React.FC<BookingInquiriesWidgetProps> = ({
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-gray-900">
-                      {inq.fullName}
+                      {inq.customerName || inq.fullName || "Customer"}
                     </span>
                     <span className="text-[10px] text-gray-400 font-mono">
-                      {inq.eventType}
+                      {inq.eventType || inq.subject || (inq.inquiryType === "contact" ? "Contact" : "Booking")}
                     </span>
                   </div>
                   <div className="text-[11px] text-gray-600 flex items-center justify-between">
                     <span>
                       For:{" "}
                       <strong className="text-gray-800">
-                        {inq.celebrityName || "General Inquiry"}
+                        {inq.celebrityName || inq.subject || "General Inquiry"}
                       </strong>
                     </span>
-                    {inq.budgetRange && (
+                    {(inq.budget || inq.budgetRange) && (
                       <span className="text-[#9B111E] font-semibold">
-                        {inq.budgetRange}
+                        {inq.budget || inq.budgetRange}
                       </span>
                     )}
                   </div>

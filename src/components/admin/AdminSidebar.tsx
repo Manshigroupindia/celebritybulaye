@@ -53,7 +53,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ onCloseMobile }) => 
       name: "Inquiries",
       href: "/admin/inquiries",
       icon: CalendarCheck,
-      status: "placeholder",
+      status: "active",
     },
     {
       name: "Site Settings",
